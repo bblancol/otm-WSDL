@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:cxf="http://camel.apache.org/schema/cxf"
+    xmlns:osgi="http://www.springframework.org/schema/osgi"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="     http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd     http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd     http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+    
+
+ <cxf:cxfEndpoint address="http://localhost:8384/transportUnit"
+        id="wsTransportUnitEndPoint" serviceClass="com.estafeta.WSTransportUnit">
+        <cxf:properties>
+            <entry key="dataFormat" value="POJO"/>
+        </cxf:properties>
+  </cxf:cxfEndpoint>
+  <cxf:cxfEndpoint address="http://localhost:8384/employee"
+        id="wsEmployeeEndPoint" serviceClass="com.estafeta.WSEmployee">
+        <cxf:properties>
+            <entry key="dataFormat" value="POJO"/>
+        </cxf:properties>
+  </cxf:cxfEndpoint>
+  <bean class="com.estafeta.TransportUnitProcessor" id="transportUnitProcessor"/>
+  <bean class="com.estafeta.EmployeeProcessor" id="employeeProcessor"/>
+  <camelContext trace="false" xmlns="http://camel.apache.org/schema/spring">
+  <route id="cxf-webservice-transportUnit">
+    <from uri="wsTransportUnitEndPoint" id="_from1">
+      <description/>
+    </from>
+    <log message="Mensaje Recibido -- ${body}" id="_log1"/>
+    <process ref="transportUnitProcessor" id="_process1"/>
+    <to uri="log:output" id="_to1"/>
+  </route>
+  <route id="cxf-webservice-employee">
+    <from uri="wsEmployeeEndPoint" id="_from2">
+      <description/>
+    </from>
+    <log message="Mensaje Recibido -- ${body}" id="_log2"/>
+    <process ref="employeeProcessor" id="_process2"/>
+    <to uri="log:output" id="_to2"/>
+  </route>
+</camelContext>
+</beans>
