@@ -18,8 +18,22 @@
             <entry key="dataFormat" value="POJO"/>
         </cxf:properties>
   </cxf:cxfEndpoint>
+  <cxf:cxfEndpoint address="http://localhost:8384/location"
+        id="wsLocationEndPoint" serviceClass="com.estafeta.WSLocation">
+        <cxf:properties>
+            <entry key="dataFormat" value="POJO"/>
+        </cxf:properties>
+  </cxf:cxfEndpoint>
+  <cxf:cxfEndpoint address="http://localhost:8384/transportOrder"
+        id="wsTransportOrderEndPoint" serviceClass="com.estafeta.WSTransportOrder">
+        <cxf:properties>
+            <entry key="dataFormat" value="POJO"/>
+        </cxf:properties>
+  </cxf:cxfEndpoint>
   <bean class="com.estafeta.TransportUnitProcessor" id="transportUnitProcessor"/>
   <bean class="com.estafeta.EmployeeProcessor" id="employeeProcessor"/>
+  <bean class="com.estafeta.TransportOrderProcessor" id="transportOrderProcessor"/>
+  <bean class="com.estafeta.LocationProcessor" id="locationProcessor"/>
   <camelContext trace="false" xmlns="http://camel.apache.org/schema/spring">
   <route id="cxf-webservice-transportUnit">
     <from uri="wsTransportUnitEndPoint" id="_from1">
@@ -36,6 +50,24 @@
     <log message="Mensaje Recibido -- ${body}" id="_log2"/>
     <process ref="employeeProcessor" id="_process2"/>
     <to uri="log:output" id="_to2"/>
+  </route>
+  
+  <route id="cxf-webservice-location">
+    <from uri="wsLocationEndPoint" id="_from3">
+      <description/>
+    </from>
+    <log message="Mensaje Recibido -- ${body}" id="_log3"/>
+    <process ref="locationProcessor" id="_process3"/>
+    <to uri="log:output" id="_to3"/>
+  </route>
+  
+  <route id="cxf-webservice-transportOrder">
+    <from uri="wsTransportOrderEndPoint" id="_from4">
+      <description/>
+    </from>
+    <log message="Mensaje Recibido -- ${body}" id="_log4"/>
+    <process ref="transportOrderProcessor" id="_process4"/>
+    <to uri="log:output" id="_to4"/>
   </route>
 </camelContext>
 </beans>
