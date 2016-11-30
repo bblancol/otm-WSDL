@@ -3,33 +3,57 @@
     xmlns:context="http://www.springframework.org/schema/context"
     xmlns:cxf="http://camel.apache.org/schema/cxf"
     xmlns:osgi="http://www.springframework.org/schema/osgi"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="     http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd     http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd     http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
-    
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+    xsi:schemaLocation="     
+    	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd     
+    	http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd     
+    	http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd        
+    	http://www.springframework.org/schema/beans  http://www.springframework.org/schema/beans/spring-beans.xsd        
+    	http://camel.apache.org/schema/spring  http://camel.apache.org/schema/spring/camel-spring.xsd 
+    	http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd"> 
 
- <cxf:cxfEndpoint address="http://localhost:8384/transportUnit"
+  <!-- Defined the real JAXRS back end service  -->
+
+
+  <jaxrs:server id="LocationrestService"
+                address="http://localhost:8385/middleware/rest/location/" 
+                staticSubresourceResolution="true">
+    <jaxrs:serviceBeans>
+      <ref bean="locationService"/>
+    </jaxrs:serviceBeans>       
+    <jaxrs:providers>           
+    	<bean class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>      
+	</jaxrs:providers>
+  </jaxrs:server>
+  
+ <cxf:cxfEndpoint address="http://localhost:8384/middleware/transportUnit"
         id="wsTransportUnitEndPoint" serviceClass="com.estafeta.WSTransportUnit">
         <cxf:properties>
             <entry key="dataFormat" value="POJO"/>
         </cxf:properties>
   </cxf:cxfEndpoint>
-  <cxf:cxfEndpoint address="http://localhost:8384/employee"
+  <cxf:cxfEndpoint address="http://localhost:8384/middleware/employee"
         id="wsEmployeeEndPoint" serviceClass="com.estafeta.WSEmployee">
         <cxf:properties>
             <entry key="dataFormat" value="POJO"/>
         </cxf:properties>
   </cxf:cxfEndpoint>
-  <cxf:cxfEndpoint address="http://localhost:8384/location"
-        id="wsLocationEndPoint" serviceClass="com.estafeta.WSLocation">
-        <cxf:properties>
-            <entry key="dataFormat" value="POJO"/>
-        </cxf:properties>
-  </cxf:cxfEndpoint>
-  <cxf:cxfEndpoint address="http://localhost:8384/transportOrder"
+  <cxf:cxfEndpoint address="http://localhost:8384/middleware/transportOrder"
         id="wsTransportOrderEndPoint" serviceClass="com.estafeta.WSTransportOrder">
         <cxf:properties>
             <entry key="dataFormat" value="POJO"/>
         </cxf:properties>
   </cxf:cxfEndpoint>
+  
+  <!-- Server Endpoint to create the cxf-rs consumer -->
+  <cxf:rsServer id="rsLocationServer" address="http://localhost:8386/middleware/location/service"
+    serviceClass="com.estafeta.WSLocation" 
+    loggingFeatureEnabled="true" loggingSizeLimit="20"/>
+        
+  <bean id="locationService" class="com.estafeta.WSLocationProcessor" />
+   
+  <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
   <bean class="com.estafeta.TransportUnitProcessor" id="transportUnitProcessor"/>
   <bean class="com.estafeta.EmployeeProcessor" id="employeeProcessor"/>
   <bean class="com.estafeta.TransportOrderProcessor" id="transportOrderProcessor"/>
@@ -51,16 +75,6 @@
     <process ref="employeeProcessor" id="_process2"/>
     <to uri="log:output" id="_to2"/>
   </route>
-  
-  <route id="cxf-webservice-location">
-    <from uri="wsLocationEndPoint" id="_from3">
-      <description/>
-    </from>
-    <log message="Mensaje Recibido -- ${body}" id="_log3"/>
-    <process ref="locationProcessor" id="_process3"/>
-    <to uri="log:output" id="_to3"/>
-  </route>
-  
   <route id="cxf-webservice-transportOrder">
     <from uri="wsTransportOrderEndPoint" id="_from4">
       <description/>
@@ -68,6 +82,12 @@
     <log message="Mensaje Recibido -- ${body}" id="_log4"/>
     <process ref="transportOrderProcessor" id="_process4"/>
     <to uri="log:output" id="_to4"/>
+  </route>
+  <route id="cxf-webservice-location">
+    <from uri="cxfrs://bean://rsLocationServer?resourceClasses=com.estafeta.WSLocation"/>
+    <log message="Mensaje Recibido -- ${body}" id="_log3"/>
+    <process ref="locationProcessor" id="_process3"/>
+    <to uri="log:output" id="_to3"/>
   </route>
 </camelContext>
 </beans>

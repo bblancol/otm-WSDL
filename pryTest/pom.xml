@@ -4,7 +4,6 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.estafeta</groupId>
-  <artifactId>sap-origen</artifactId>
   <packaging>jar</packaging>
   <version>1.0.0</version>
 
@@ -168,6 +167,11 @@
     	<artifactId>interfaceentities</artifactId>
     	<version>0.0.1</version>
     </dependency>
+    <dependency>
+    	<groupId>org.codehaus.jackson</groupId>
+    	<artifactId>jackson-jaxrs</artifactId>
+    	<version>1.9.13</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -201,4 +205,5 @@
     </plugins>
   </build>
 
+  <artifactId>contracts</artifactId>
 </project>
